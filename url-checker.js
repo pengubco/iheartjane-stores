@@ -69,7 +69,10 @@ async function checkUrlRedirect() {
         // Handle common popup patterns (age verification, cookie consent, etc.)
         await handlePopups(page);
         
-        // Get the final URL after navigation
+        // Additional specific handling for Jane's age verification popup
+        await handleJaneAgeVerification(page);
+        
+        // Get the final URL after navigation (might have changed after popup handling)
         const finalUrl = page.url();
         const statusCode = response.status();
         
@@ -148,13 +151,20 @@ async function handlePopups(page) {
         
         // Common selectors for popups that might block interaction
         const popupSelectors = [
-            // Age verification
+            // Jane-specific age verification (from your screenshot)
+            'button:has-text("Confirm")',
+            'button:contains("Confirm")',
+            '[role="dialog"] button:has-text("Confirm")',
+            
+            // General age verification
             'button[data-testid*="age"]',
             'button[class*="age"]',
             'button:has-text("Yes")',
             'button:has-text("I am 21")',
+            'button:has-text("I am over 21")',
             'button:has-text("Enter")',
             'button:has-text("Continue")',
+            'button:has-text("Proceed")',
             
             // Cookie consent
             'button[id*="cookie"]',
@@ -169,10 +179,15 @@ async function handlePopups(page) {
             '[class*="modal"] button',
             '[role="dialog"] button',
             
-            // Common popup dismiss patterns
+            // Common popup dismiss patterns  
             '.popup button',
             '.modal button',
-            '.overlay button'
+            '.overlay button',
+            
+            // Fallback patterns for any confirmation dialog
+            'button[type="submit"]',
+            'button[class*="primary"]',
+            'button[class*="confirm"]'
         ];
         
         // Try to click any visible popup dismiss buttons
@@ -201,6 +216,73 @@ async function handlePopups(page) {
         
     } catch (error) {
         console.log('⚠️  Could not dismiss popups automatically, continuing...');
+    }
+}
+
+async function handleJaneAgeVerification(page) {
+    try {
+        console.log('🔍 Specifically checking for Jane age verification popup...');
+        
+        // Wait a bit to ensure popup has loaded
+        await page.waitForTimeout(2000);
+        
+        // Look for the specific popup content we saw in the screenshot
+        const ageVerificationSelectors = [
+            // Text-based selectors for the exact "Confirm" button
+            'button:has-text("Confirm")',
+            'button:text("Confirm")',
+            
+            // Try finding the button within the dialog that contains the age verification text
+            ':has-text("Please confirm you\'re over 21") button:has-text("Confirm")',
+            ':has-text("over 21 or a valid medical patient") button:has-text("Confirm")',
+            
+            // Broader pattern matching
+            '[role="dialog"]:has-text("over 21") button',
+            '.modal:has-text("over 21") button',
+            
+            // CSS selectors that might match the purple button
+            'button[style*="background"][style*="purple"]',
+            'button[class*="purple"]',
+            'button[class*="primary"]'
+        ];
+        
+        for (const selector of ageVerificationSelectors) {
+            try {
+                console.log(`🔍 Trying selector: ${selector}`);
+                
+                // Wait for the element to be visible (up to 5 seconds)
+                const element = await page.waitForSelector(selector, { 
+                    timeout: 5000, 
+                    state: 'visible' 
+                }).catch(() => null);
+                
+                if (element) {
+                    console.log(`✅ Found Jane age verification popup with selector: ${selector}`);
+                    console.log(`🖱️  Clicking "Confirm" button...`);
+                    
+                    await element.click();
+                    
+                    // Wait for popup to close
+                    await page.waitForTimeout(3000);
+                    
+                    // Check if popup is gone
+                    const stillVisible = await page.$(selector).then(el => el?.isVisible()).catch(() => false);
+                    if (!stillVisible) {
+                        console.log('✅ Successfully dismissed Jane age verification popup!');
+                    }
+                    
+                    return; // Exit after successful click
+                }
+            } catch (selectorError) {
+                console.log(`⚠️  Selector failed: ${selector}`);
+                continue;
+            }
+        }
+        
+        console.log('ℹ️  No Jane age verification popup found (might have been handled by general popup handler)');
+        
+    } catch (error) {
+        console.log('⚠️  Error handling Jane age verification:', error.message);
     }
 }
 
