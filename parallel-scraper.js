@@ -14,7 +14,7 @@ let chunkSize = 100; // stores per chunk
 let maxConcurrent = 5; // maximum parallel processes
 let saveHtml = args.includes('--save-html');
 let savePng = args.includes('--save-png');
-let headless = true; // force headless for parallel processing
+let headless = args.includes('--headless'); // optional headless mode
 
 // Parse arguments
 const startFlag = args.findIndex(arg => arg === '--start');
@@ -52,15 +52,17 @@ Options:
   -o <path>              Short form of --output
   --chunk-size <size>    Stores per chunk/process (default: 100)
   --max-concurrent <n>   Maximum parallel processes (default: 5)
+  --headless             Run browsers in headless mode (no UI)
   --save-html            Save HTML files (passed to each process)
   --save-png             Save PNG screenshots (passed to each process)
   --help, -h             Show this help message
 
 Examples:
-  node parallel-scraper.js                                    # Scrape stores 1-6000 with defaults
+  node parallel-scraper.js                                    # Scrape stores 1-6000 with browser UI
+  node parallel-scraper.js --headless                         # Scrape stores 1-6000 without browser UI
   node parallel-scraper.js --start 1 --end 1000 --chunk-size 50  # 1000 stores, 50 per chunk
   node parallel-scraper.js --max-concurrent 10 --output ./data   # 10 parallel processes to ./data
-  node parallel-scraper.js --save-html --save-png                # Save all file formats
+  node parallel-scraper.js --save-html --save-png --headless     # Save all formats in headless mode
 
 Performance Notes:
 - Each chunk runs as a separate process with its own browser instance
@@ -116,9 +118,10 @@ async function processChunk(chunk, chunkIndex) {
             'playwright-brave.js',
             '--start', chunk.start.toString(),
             '--end', chunk.end.toString(),
-            '--output', outputDir,
-            '--headless'
+            '--output', outputDir
         ];
+
+        if (headless) args.push('--headless');
 
         if (saveHtml) args.push('--save-html');
         if (savePng) args.push('--save-png');
