@@ -80,27 +80,45 @@ async function fetchSingleStore(page, storeId) {
     try {
         console.log(`📄 Fetching store ${storeId}...`);
         
-        // Navigate to the URL
-        await page.goto(url, {
+        // Navigate to the URL and capture response
+        const response = await page.goto(url, {
             waitUntil: 'networkidle',
             timeout: 30000
         });
         
-        // Always get the text content (likely JSON)
+        const statusCode = response.status();
+        console.log(`📡 Store ${storeId}: HTTP ${statusCode}`);
+        
+        // Don't save anything for 404 responses
+        if (statusCode === 404) {
+            console.log(`⚠️  Store ${storeId}: Not found (404) - skipping save`);
+            return { success: false, storeId, reason: 'Not found', statusCode: 404 };
+        }
+        
+        // Get the text content (likely JSON)
         const textContent = await page.evaluate(() => {
             return document.body.innerText || document.body.textContent || '';
         });
         
-        // Check if store exists (simple validation)
+        // Check if we have valid JSON data
         if (textContent.trim().length < 10) {
-            console.log(`⚠️  Store ${storeId}: No data or store not found`);
-            return { success: false, storeId, reason: 'No data' };
+            console.log(`⚠️  Store ${storeId}: No data or empty response`);
+            return { success: false, storeId, reason: 'No data', statusCode };
         }
         
-        // Always save the text content
-        const txtFilename = path.join(destinationFolder, `iheartjane-store-${storeId}.txt`);
-        await fs.writeFile(txtFilename, textContent, 'utf8');
-        console.log(`✅ Store ${storeId}: Text saved to ${txtFilename}`);
+        // Parse and validate JSON before saving
+        let jsonData;
+        try {
+            jsonData = JSON.parse(textContent);
+        } catch (parseError) {
+            console.log(`⚠️  Store ${storeId}: Invalid JSON response`);
+            return { success: false, storeId, reason: 'Invalid JSON', statusCode };
+        }
+        
+        // Save as JSON file
+        const jsonFilename = path.join(destinationFolder, `iheartjane-store-${storeId}.json`);
+        await fs.writeFile(jsonFilename, JSON.stringify(jsonData, null, 2), 'utf8');
+        console.log(`✅ Store ${storeId}: JSON saved to ${jsonFilename}`);
         
         // Optionally save HTML content
         if (saveHtml) {
@@ -117,11 +135,11 @@ async function fetchSingleStore(page, storeId) {
             console.log(`✅ Store ${storeId}: Screenshot saved to ${screenshotPath}`);
         }
         
-        return { success: true, storeId };
+        return { success: true, storeId, statusCode };
         
     } catch (error) {
         console.error(`❌ Store ${storeId} error: ${error.message}`);
-        return { success: false, storeId, reason: error.message };
+        return { success: false, storeId, reason: error.message, statusCode: 'error' };
     }
 }
 
@@ -149,7 +167,8 @@ async function fetchWithBrave() {
     const results = {
         success: [],
         failed: [],
-        total: endId - startId + 1
+        total: endId - startId + 1,
+        statusCodes: {}
     };
 
     try {
@@ -162,10 +181,17 @@ async function fetchWithBrave() {
         for (let storeId = startId; storeId <= endId; storeId++) {
             const result = await fetchSingleStore(page, storeId);
             
+            // Track status codes
+            const statusCode = result.statusCode || 'unknown';
+            if (!results.statusCodes[statusCode]) {
+                results.statusCodes[statusCode] = 0;
+            }
+            results.statusCodes[statusCode]++;
+            
             if (result.success) {
                 results.success.push(result.storeId);
             } else {
-                results.failed.push({ storeId: result.storeId, reason: result.reason });
+                results.failed.push({ storeId: result.storeId, reason: result.reason, statusCode: result.statusCode });
             }
             
             // Progress indicator
@@ -184,15 +210,50 @@ async function fetchWithBrave() {
         console.log(`❌ Failed: ${results.failed.length}`);
         console.log(`📊 Total: ${results.total}`);
         
+        // Status code summary
+        console.log('\n📡 Response Code Summary:');
+        const sortedStatusCodes = Object.entries(results.statusCodes).sort(([a], [b]) => {
+            // Sort by status code, putting numbers first, then strings
+            const aNum = parseInt(a);
+            const bNum = parseInt(b);
+            if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+            if (!isNaN(aNum)) return -1;
+            if (!isNaN(bNum)) return 1;
+            return a.localeCompare(b);
+        });
+        
+        sortedStatusCodes.forEach(([statusCode, count]) => {
+            const percentage = ((count / results.total) * 100).toFixed(1);
+            const emoji = statusCode === '200' ? '✅' : statusCode === '404' ? '❌' : '⚠️';
+            console.log(`   ${emoji} HTTP ${statusCode}: ${count} stores (${percentage}%)`);
+        });
+        
         if (results.failed.length > 0) {
-            console.log('\n❌ Failed stores:');
+            console.log('\n❌ Failed stores by reason:');
+            const failuresByReason = {};
             results.failed.forEach(fail => {
-                console.log(`   Store ${fail.storeId}: ${fail.reason}`);
+                const key = `${fail.reason}${fail.statusCode ? ` (HTTP ${fail.statusCode})` : ''}`;
+                if (!failuresByReason[key]) failuresByReason[key] = [];
+                failuresByReason[key].push(fail.storeId);
+            });
+            
+            Object.entries(failuresByReason).forEach(([reason, storeIds]) => {
+                console.log(`   ${reason}: ${storeIds.length} stores`);
+                if (storeIds.length <= 10) {
+                    console.log(`     Store IDs: ${storeIds.join(', ')}`);
+                } else {
+                    console.log(`     Store IDs: ${storeIds.slice(0, 10).join(', ')} ... and ${storeIds.length - 10} more`);
+                }
             });
         }
         
         if (results.success.length > 0) {
-            console.log('\n✅ Successfully fetched stores:', results.success.join(', '));
+            console.log(`\n✅ Successfully saved ${results.success.length} JSON files`);
+            if (results.success.length <= 20) {
+                console.log(`   Store IDs: ${results.success.join(', ')}`);
+            } else {
+                console.log(`   Store IDs: ${results.success.slice(0, 20).join(', ')} ... and ${results.success.length - 20} more`);
+            }
         }
         
     } catch (error) {

@@ -110,7 +110,12 @@ const progress = {
     completed: 0,
     failed: 0,
     total: chunks.length,
-    startTime: Date.now()
+    startTime: Date.now(),
+    statusCodes: {},
+    storeResults: {
+        successful: [],
+        failed: []
+    }
 };
 
 // Process a single chunk
@@ -147,10 +152,50 @@ async function processChunk(chunk, chunkIndex) {
         });
 
         child.on('close', (code) => {
+            // Parse status codes from stdout
+            const parseResults = (output) => {
+                const results = { statusCodes: {}, successful: [], failed: [] };
+                
+                // Extract HTTP status codes from output
+                const statusCodeMatches = output.match(/HTTP (\d+|error): (\d+) stores/g);
+                if (statusCodeMatches) {
+                    statusCodeMatches.forEach(match => {
+                        const [_, statusCode, count] = match.match(/HTTP (\d+|error): (\d+) stores/);
+                        results.statusCodes[statusCode] = parseInt(count);
+                    });
+                }
+                
+                // Extract successful store IDs
+                const successMatch = output.match(/Successfully saved (\d+) JSON files/);
+                if (successMatch) {
+                    const storeIdsMatch = output.match(/Store IDs: ([\d, ]+)/);
+                    if (storeIdsMatch) {
+                        results.successful = storeIdsMatch[1].split(', ').map(id => parseInt(id.trim()));
+                    }
+                }
+                
+                return results;
+            };
+            
             if (code === 0) {
                 progress.completed++;
                 console.log(`✅ Chunk ${chunkIndex + 1}/${chunks.length} completed (stores ${chunk.start}-${chunk.end})`);
-                resolve({ success: true, chunkIndex, chunk, stdout });
+                
+                // Parse and aggregate results
+                const chunkResults = parseResults(stdout);
+                
+                // Aggregate status codes
+                Object.entries(chunkResults.statusCodes).forEach(([statusCode, count]) => {
+                    if (!progress.statusCodes[statusCode]) {
+                        progress.statusCodes[statusCode] = 0;
+                    }
+                    progress.statusCodes[statusCode] += count;
+                });
+                
+                // Aggregate successful stores
+                progress.storeResults.successful.push(...chunkResults.successful);
+                
+                resolve({ success: true, chunkIndex, chunk, stdout, results: chunkResults });
             } else {
                 progress.failed++;
                 console.error(`❌ Chunk ${chunkIndex + 1}/${chunks.length} failed with code ${code}`);
@@ -229,6 +274,32 @@ async function main() {
 
 Average time per chunk: ${(totalTime / results.length).toFixed(1)} seconds
         `);
+
+        // Aggregated status code summary
+        if (Object.keys(progress.statusCodes).length > 0) {
+            console.log('\n📡 Aggregated Response Code Summary:');
+            const sortedStatusCodes = Object.entries(progress.statusCodes).sort(([a], [b]) => {
+                const aNum = parseInt(a);
+                const bNum = parseInt(b);
+                if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+                if (!isNaN(aNum)) return -1;
+                if (!isNaN(bNum)) return 1;
+                return a.localeCompare(b);
+            });
+            
+            const totalStores = endId - startId + 1;
+            sortedStatusCodes.forEach(([statusCode, count]) => {
+                const percentage = ((count / totalStores) * 100).toFixed(1);
+                const emoji = statusCode === '200' ? '✅' : statusCode === '404' ? '❌' : '⚠️';
+                console.log(`   ${emoji} HTTP ${statusCode}: ${count} stores (${percentage}%)`);
+            });
+            
+            // Summary of saved files
+            const totalSaved = progress.storeResults.successful.length;
+            if (totalSaved > 0) {
+                console.log(`\n💾 Files Saved: ${totalSaved} JSON files successfully created`);
+            }
+        }
 
         if (failed > 0) {
             console.log('\n❌ Failed chunks:');
