@@ -133,7 +133,7 @@ Happy scraping! 🚀
 
 ## Latest Store Analysis Results
 
-*Data as of January 7, 2025*
+*Data as of July 7, 2025*
 
 ```
 🔍 Analyzing 5927 store files...
