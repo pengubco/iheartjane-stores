@@ -11,11 +11,26 @@ A basic JavaScript project set up with the latest LTS version of Node.js.
 
 ## Getting Started
 
-### Run the project:
+### Run the main project:
 ```bash
 npm start
 # or
 npm run dev
+```
+
+### Run the Playwright web scraper:
+```bash
+# Basic usage - saves only text content
+node playwright-brave.js
+
+# Save all formats (HTML + PNG + text)
+node playwright-brave.js --save-html --save-png
+
+# Run in headless mode (no browser window)
+node playwright-brave.js --headless
+
+# Show help and options
+node playwright-brave.js --help
 ```
 
 ### Check your setup:
