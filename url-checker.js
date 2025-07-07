@@ -51,6 +51,12 @@ async function checkUrlRedirect() {
         // Create a new page
         const page = await browser.newPage();
         
+        // Set up popup/dialog handlers to automatically dismiss them
+        page.on('dialog', async dialog => {
+            console.log(`🔔 Auto-dismissing dialog: "${dialog.message()}"`);
+            await dialog.accept();
+        });
+        
         console.log(`\n📄 Navigating to: ${targetUrl}`);
         console.log('⏳ Please wait while checking... (browser will close automatically)');
         
@@ -59,6 +65,9 @@ async function checkUrlRedirect() {
             waitUntil: 'networkidle',
             timeout: 30000
         });
+        
+        // Handle common popup patterns (age verification, cookie consent, etc.)
+        await handlePopups(page);
         
         // Get the final URL after navigation
         const finalUrl = page.url();
@@ -130,6 +139,68 @@ async function checkUrlRedirect() {
         // Close the browser
         await browser.close();
         console.log('\n🏁 Browser closed successfully');
+    }
+}
+
+async function handlePopups(page) {
+    try {
+        console.log('🔍 Checking for popups to dismiss...');
+        
+        // Common selectors for popups that might block interaction
+        const popupSelectors = [
+            // Age verification
+            'button[data-testid*="age"]',
+            'button[class*="age"]',
+            'button:has-text("Yes")',
+            'button:has-text("I am 21")',
+            'button:has-text("Enter")',
+            'button:has-text("Continue")',
+            
+            // Cookie consent
+            'button[id*="cookie"]',
+            'button[class*="cookie"]',
+            'button:has-text("Accept")',
+            'button:has-text("OK")',
+            'button:has-text("Got it")',
+            
+            // General modal close buttons
+            'button[class*="close"]',
+            'button[aria-label*="close"]',
+            '[class*="modal"] button',
+            '[role="dialog"] button',
+            
+            // Common popup dismiss patterns
+            '.popup button',
+            '.modal button',
+            '.overlay button'
+        ];
+        
+        // Try to click any visible popup dismiss buttons
+        for (const selector of popupSelectors) {
+            try {
+                const element = await page.$(selector);
+                if (element) {
+                    const isVisible = await element.isVisible();
+                    if (isVisible) {
+                        console.log(`🖱️  Clicking popup button: ${selector}`);
+                        await element.click();
+                        
+                        // Wait a moment for popup to close
+                        await page.waitForTimeout(1000);
+                        break; // Exit after first successful click
+                    }
+                }
+            } catch (clickError) {
+                // Continue to next selector if this one fails
+                continue;
+            }
+        }
+        
+        // Wait a moment after handling popups
+        await page.waitForTimeout(2000);
+        
+    } catch (error) {
+        console.log('⚠️  Could not dismiss popups automatically, continuing...');
     }
 }
 
