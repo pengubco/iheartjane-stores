@@ -1,16 +1,29 @@
 {
-  "name": "ai-playground",
+  "name": "scrape-iheartjane",
   "version": "1.0.0",
+  "description": "Web scraper for iHeartJane store data using Playwright with parallel processing support",
   "main": "index.js",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "start": "node index.js",
     "dev": "node index.js",
+    "scrape": "node playwright-brave.js",
+    "scrape-parallel": "node parallel-scraper.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "web-scraper",
+    "playwright",
+    "iheartjane",
+    "parallel-processing",
+    "cannabis",
+    "dispensary",
+    "data-extraction"
+  ],
   "author": "pengubco@users.noreply.github.com",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "playwright": "^1.53.2"
   }

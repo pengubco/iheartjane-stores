@@ -1,13 +1,20 @@
-# JavaScript Project
+# scrape-iheartjane
 
-A basic JavaScript project set up with the latest LTS version of Node.js.
+Web scraper for iHeartJane store data using Playwright with parallel processing support.
+
+## Requirements
+
+- **Node.js**: v22 LTS or higher
+- **npm**: Latest version (comes with Node.js)
+- **Brave Browser**: Required for web scraping (script configured for Brave)
 
 ## Setup Complete ✅
 
-- ✅ Latest LTS Node.js version installed via nvm
+- ✅ Node.js v22 LTS requirement specified
 - ✅ npm initialized with package.json
-- ✅ Basic entry point created (index.js)
-- ✅ Development scripts configured
+- ✅ Playwright browser automation configured
+- ✅ Single and parallel processing scripts
+- ✅ Command-line interface with comprehensive options
 
 ## Getting Started
 
@@ -18,74 +25,82 @@ npm start
 npm run dev
 ```
 
-### Run the Playwright web scraper:
+### Web Scraping Commands:
 
-#### Single Process (small ranges):
+#### Single Process (recommended for < 100 stores):
 ```bash
-# Basic usage - fetch single store (default: 477) to current directory
-node playwright-brave.js
+# Using npm scripts
+npm run scrape                                      # Default: single store 477
+npm run scrape -- --store 123 --output ./data     # Specific store to folder
 
-# Fetch specific store by ID to specific folder
-node playwright-brave.js --store 123 --output ./data
-
-# Fetch range of stores to specific directory
-node playwright-brave.js --start 470 --end 480 -o ./stores
-
-# Save all formats to specific directory
-node playwright-brave.js --start 470 --end 475 --save-html --save-png --output ./complete-data
-
-# Show help and all options
-node playwright-brave.js --help
+# Direct command usage
+node playwright-brave.js --start 470 --end 480 -o ./stores         # Range of stores
+node playwright-brave.js --store 477 --save-html --save-png         # Save all formats
+node playwright-brave.js --help                                     # Show all options
 ```
 
-#### Parallel Processing (large ranges):
+#### Parallel Processing (recommended for > 100 stores):
 ```bash
-# Default: scrape stores 1-6000 with 5 concurrent processes, 100 stores per chunk
-node parallel-scraper.js
+# Using npm scripts  
+npm run scrape-parallel                             # Default: stores 1-6000
 
-# Custom range with optimized settings
+# Direct command usage
 node parallel-scraper.js --start 1 --end 1000 --chunk-size 50 --max-concurrent 10
-
-# Save all formats with parallel processing
-node parallel-scraper.js --save-html --save-png --output ./all-stores-data
-
-# High-performance setup for fast systems
-node parallel-scraper.js --chunk-size 200 --max-concurrent 8 --output ./bulk-data
-
-# Show parallel scraper help and options
-node parallel-scraper.js --help
+node parallel-scraper.js --start 1 --end 6000 --chunk-size 200 --max-concurrent 8 --headless
+node parallel-scraper.js --help                    # Show all options
 ```
 
 **Performance Recommendations:**
-- **Small ranges (< 100 stores)**: Use `playwright-brave.js` directly
-- **Large ranges (> 100 stores)**: Use `parallel-scraper.js` for much faster processing
+- **Small ranges (< 100 stores)**: Use single process scraper
+- **Large ranges (> 100 stores)**: Use parallel scraper for much faster processing
 - **Chunk size**: 50-200 stores per chunk (larger = fewer processes, smaller = more parallelism)
 - **Max concurrent**: 3-10 processes depending on your system resources
 
 ## Project Structure
 
 ```
-ai-playground/
-├── package.json    # Project configuration and dependencies
-├── index.js        # Main application entry point
-└── README.md       # This file
+scrape-iheartjane/
+├── package.json           # Project configuration and dependencies
+├── index.js              # Basic Node.js entry point
+├── playwright-brave.js   # Single-process web scraper
+├── parallel-scraper.js   # Multi-process parallel scraper
+├── README.md             # This documentation
+└── .gitignore           # Git ignore rules (excludes output directories)
 ```
 
 ## Available Scripts
 
-- `npm start` - Run the application
-- `npm run dev` - Run the application (development)
+- `npm start` - Run basic Node.js application
+- `npm run dev` - Run in development mode  
+- `npm run scrape` - Run single-process web scraper
+- `npm run scrape-parallel` - Run parallel web scraper
 - `npm test` - Run tests (placeholder)
 
-## Next Steps
+## Features
 
-Your JavaScript project is ready for development! You can:
+- **Playwright Integration**: Uses Brave browser for reliable scraping
+- **Parallel Processing**: Handle large ranges (1-6000+ stores) efficiently
+- **Configurable Output**: Save text, HTML, and PNG formats
+- **Destination Control**: Specify custom output directories
+- **Progress Tracking**: Real-time progress indicators and completion statistics
+- **Error Handling**: Robust error handling and retry logic
+- **Command Line Interface**: Comprehensive CLI with help documentation
 
-1. Add dependencies with `npm install <package-name>`
-2. Create additional modules and files
-3. Set up testing frameworks
-4. Add build tools like webpack or vite
-5. Configure linting with ESLint
-6. Add TypeScript support
+## Installation
 
-Happy coding! 🚀
+```bash
+# Clone the repository
+git clone <repository-url>
+cd scrape-iheartjane
+
+# Install dependencies
+npm install
+
+# Install Playwright browsers
+npx playwright install
+
+# Verify Node.js version (requires v22 LTS or higher)
+node --version
+```
+
+Happy scraping! 🚀
