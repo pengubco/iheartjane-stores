@@ -86,7 +86,6 @@ node analyze-stores.js
 ```
 scrape-iheartjane/
 ├── package.json           # Project configuration and dependencies
-├── index.js              # Basic Node.js entry point
 ├── playwright-brave.js   # Single-process web scraper
 ├── parallel-scraper.js   # Multi-process parallel scraper
 ├── analyze-stores.js      # Script to analyze store data and generate reports
@@ -96,7 +95,6 @@ scrape-iheartjane/
 
 ## Available Scripts
 
-- `npm start` - Run basic Node.js application
 - `npm run dev` - Run in development mode  
 - `npm run scrape` - Run single-process web scraper
 - `npm run scrape-parallel` - Run parallel web scraper
