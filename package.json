@@ -11,6 +11,7 @@
     "dev": "node index.js",
     "scrape": "node playwright-brave.js",
     "scrape-parallel": "node parallel-scraper.js",
+    "check-url": "node url-checker.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

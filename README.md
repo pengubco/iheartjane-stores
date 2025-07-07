@@ -50,6 +50,19 @@ node parallel-scraper.js --start 1 --end 6000 --chunk-size 200 --max-concurrent 
 node parallel-scraper.js --help                    # Show all options
 ```
 
+#### URL Redirect Checker:
+```bash
+# Using npm scripts
+npm run check-url                                   # Check default URL (stores/5585)
+npm run check-url -- --url https://www.iheartjane.com/stores/123  # Check custom URL
+
+# Direct command usage
+node url-checker.js                                 # Check stores/5585 with browser UI
+node url-checker.js --headless                      # Check without browser UI
+node url-checker.js --url https://www.iheartjane.com/stores/456   # Check specific store
+node url-checker.js --help                          # Show all options
+```
+
 **Performance Recommendations:**
 - **Small ranges (< 100 stores)**: Use single process scraper
 - **Large ranges (> 100 stores)**: Use parallel scraper for much faster processing
@@ -64,6 +77,7 @@ scrape-iheartjane/
 ├── index.js              # Basic Node.js entry point
 ├── playwright-brave.js   # Single-process web scraper
 ├── parallel-scraper.js   # Multi-process parallel scraper
+├── url-checker.js        # URL redirect checker and verification tool
 ├── README.md             # This documentation
 └── .gitignore           # Git ignore rules (excludes output directories)
 ```
@@ -74,6 +88,7 @@ scrape-iheartjane/
 - `npm run dev` - Run in development mode  
 - `npm run scrape` - Run single-process web scraper
 - `npm run scrape-parallel` - Run parallel web scraper
+- `npm run check-url` - Check URL redirects and verify page behavior
 - `npm test` - Run tests (placeholder)
 
 ## Features
