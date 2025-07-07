@@ -14,7 +14,6 @@ let chunkSize = 100; // stores per chunk
 let maxConcurrent = 5; // maximum parallel processes
 let saveHtml = args.includes('--save-html');
 let savePng = args.includes('--save-png');
-let headless = args.includes('--headless'); // optional headless mode
 
 
 // Parse arguments
@@ -53,7 +52,6 @@ Options:
   -o <path>              Short form of --output
   --chunk-size <size>    Stores per chunk/process (default: 100)
   --max-concurrent <n>   Maximum parallel processes (default: 5)
-  --headless             Run browsers in headless mode (no UI)
   --save-html            Save HTML files (passed to each process)
   --save-png             Save PNG screenshots (passed to each process)
   --help, -h             Show this help message
@@ -62,7 +60,7 @@ Examples:
   node parallel-scraper.js                                      # Scrape stores 1-6000, defaults
   node parallel-scraper.js --start 1 --end 1000                 # Scrape stores 1-1000
   node parallel-scraper.js --start 1 --end 1000 --chunk-size 50 --max-concurrent 10  # Custom settings
-  node parallel-scraper.js --start 1 --end 6000 --chunk-size 200 --max-concurrent 8 --headless  # High-performance
+  node parallel-scraper.js --start 1 --end 6000 --chunk-size 200 --max-concurrent 8  # High-performance
   node parallel-scraper.js --start 1 --end 1000 --save-html --save-png  # Save all formats
   node parallel-scraper.js --start 500 --end 1500 --output ./data       # Custom output directory
 
@@ -127,8 +125,6 @@ async function processChunk(chunk, chunkIndex) {
             '--end', chunk.end.toString(),
             '--output', outputDir
         ];
-
-        if (headless) args.push('--headless');
 
         if (saveHtml) args.push('--save-html');
         if (savePng) args.push('--save-png');

@@ -18,56 +18,68 @@ Web scraper for iHeartJane store data using Playwright with parallel processing 
 
 ## Getting Started
 
-### Run the main project:
+### Step 1: Scrape Store Data
+
+Use the parallel scraper to download iHeartJane store data efficiently:
+
 ```bash
-npm start
-# or
-npm run dev
+# Scrape all stores (1-6000) with optimal settings
+node parallel-scraper.js --start 1 --end 6000 --chunk-size 200 --max-concurrent 8
+
+# Or scrape a smaller range for testing
+node parallel-scraper.js --start 1 --end 1000 --chunk-size 100 --max-concurrent 5
+
+# Custom output directory
+node parallel-scraper.js --start 1 --end 6000 --output ./my-stores --chunk-size 200
 ```
 
-### Web Scraping Commands:
+**Important:** The scraper will save JSON files to `./scraped-stores/` directory by default.
 
-#### Single Process (recommended for < 100 stores):
+### Step 2: Analyze Store Data
+
+After scraping, analyze the collected data with comprehensive reports:
+
 ```bash
-# Using npm scripts
-npm run scrape                                      # Default: single store 477
-npm run scrape -- --store 123 --output ./data     # Specific store to folder
-
-# Direct command usage
-node playwright-brave.js --start 470 --end 480 -o ./stores         # Range of stores
-node playwright-brave.js --store 477 --save-html --save-png         # Save all formats
-node playwright-brave.js --help                                     # Show all options
+# Generate store analysis report
+node analyze-stores.js
 ```
 
-#### Parallel Processing (recommended for > 100 stores):
-```bash
-# Using npm scripts  
-npm run scrape-parallel                             # Default: stores 1-6000
+This will provide:
+- ❌ **Inactive stores** count (product_count: 0)  
+- 🎉 **Active recreational stores** count (recreational: true)
+- 💊 **Active medical stores** count (medical: true)
+- 🗺️ **Active stores by state/province** with detailed breakdown
 
-# Direct command usage
-node parallel-scraper.js --start 1 --end 1000 --chunk-size 50 --max-concurrent 10
-node parallel-scraper.js --start 1 --end 6000 --chunk-size 200 --max-concurrent 8 --headless
-node parallel-scraper.js --help                    # Show all options
+### Alternative: Single Store Scraping
+
+For testing or small batches (< 100 stores):
+
+```bash
+# Single store
+node playwright-brave.js --store 477
+
+# Range of stores
+node playwright-brave.js --start 470 --end 480
+
+# With additional file formats
+node playwright-brave.js --store 477 --save-html --save-png
 ```
 
-#### URL Redirect Checker:
+### Complete Workflow Example
+
 ```bash
-# Using npm scripts
-npm run check-url                                   # Check default URL (stores/5585)
-npm run check-url -- --url https://www.iheartjane.com/stores/123  # Check custom URL
+# 1. Scrape a test batch
+node parallel-scraper.js --start 1 --end 100 --chunk-size 50 --max-concurrent 5
 
-# Direct command usage
-node url-checker.js                                 # Check stores/5585 with browser UI
-node url-checker.js --headless                      # Check without browser UI
-node url-checker.js --url https://www.iheartjane.com/stores/456   # Check specific store
-node url-checker.js --help                          # Show all options
+# 2. Analyze the results
+node analyze-stores.js
+
+# 3. For full dataset
+node parallel-scraper.js --start 1 --end 6000 --chunk-size 200 --max-concurrent 8
+
+# 4. Generate final report
+node analyze-stores.js
 ```
-
-**Performance Recommendations:**
-- **Small ranges (< 100 stores)**: Use single process scraper
-- **Large ranges (> 100 stores)**: Use parallel scraper for much faster processing
-- **Chunk size**: 50-200 stores per chunk (larger = fewer processes, smaller = more parallelism)
-- **Max concurrent**: 3-10 processes depending on your system resources
 
 ## Project Structure
 
@@ -77,7 +89,7 @@ scrape-iheartjane/
 ├── index.js              # Basic Node.js entry point
 ├── playwright-brave.js   # Single-process web scraper
 ├── parallel-scraper.js   # Multi-process parallel scraper
-├── url-checker.js        # URL redirect checker and verification tool
+├── analyze-stores.js      # Script to analyze store data and generate reports
 ├── README.md             # This documentation
 └── .gitignore           # Git ignore rules (excludes output directories)
 ```
@@ -88,7 +100,6 @@ scrape-iheartjane/
 - `npm run dev` - Run in development mode  
 - `npm run scrape` - Run single-process web scraper
 - `npm run scrape-parallel` - Run parallel web scraper
-- `npm run check-url` - Check URL redirects and verify page behavior
 - `npm test` - Run tests (placeholder)
 
 ## Features

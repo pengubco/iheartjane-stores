@@ -6,7 +6,6 @@ const path = require('path');
 const args = process.argv.slice(2);
 const saveHtml = args.includes('--save-html');
 const savePng = args.includes('--save-png');
-const headless = args.includes('--headless');
 const help = args.includes('--help') || args.includes('-h');
 
 // Parse store ID range
@@ -52,14 +51,13 @@ Options:
   -o <path>          Short form of --output
   --save-html        Save HTML content to files
   --save-png         Save screenshots as PNG files
-  --headless         Run browser in headless mode
   --help, -h         Show this help message
 
 Examples:
   node playwright-brave.js                                    # Fetch store 477 to current directory
   node playwright-brave.js --store 123 --output ./data       # Fetch store 123 to ./data folder
   node playwright-brave.js --start 470 --end 480 -o ./stores # Fetch stores 470-480 to ./stores
-  node playwright-brave.js --start 1 --end 100 --headless --output /tmp/stores  # Fetch 1-100 to /tmp/stores
+  node playwright-brave.js --start 1 --end 100 --output /tmp/stores              # Fetch 1-100 to /tmp/stores
   node playwright-brave.js --save-html --save-png --output ./downloads          # Save all formats to ./downloads
     `);
     process.exit(0);
@@ -145,7 +143,7 @@ async function fetchSingleStore(page, storeId) {
 
 async function fetchWithBrave() {
     console.log('Starting Playwright with Brave browser...');
-    console.log(`Options: HTML=${saveHtml}, PNG=${savePng}, Headless=${headless}`);
+    console.log(`Options: HTML=${saveHtml}, PNG=${savePng}`);
     
     // Create destination directory if it doesn't exist
     try {
@@ -159,7 +157,7 @@ async function fetchWithBrave() {
     const bravePath = '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser';
     
     const browser = await chromium.launch({
-        headless: headless,
+        headless: false,
         executablePath: bravePath,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
