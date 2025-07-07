@@ -130,3 +130,71 @@ node --version
 ```
 
 Happy scraping! 🚀
+
+## Latest Store Analysis Results
+
+*Data as of January 7, 2025*
+
+```
+🔍 Analyzing 5927 store files...
+
+📊 STORE ANALYSIS RESULTS
+
+==================================================
+❌ INACTIVE STORES: 3271
+
+🎉 ACTIVE RECREATIONAL STORES: 1416
+💊 ACTIVE MEDICAL STORES: 1240
+
+🗺️  ACTIVE STORES BY STATE/PROVINCE:
+   📍 California: 371 stores (14.0%)
+   📍 Washington: 254 stores (9.6%)
+   📍 Illinois: 230 stores (8.7%)
+   📍 Colorado: 221 stores (8.3%)
+   📍 New Mexico: 186 stores (7.0%)
+   📍 Ohio: 142 stores (5.3%)
+   📍 Florida: 139 stores (5.2%)
+   📍 Maryland: 107 stores (4.0%)
+   📍 Pennsylvania: 105 stores (4.0%)
+   📍 New York: 100 stores (3.8%)
+   📍 Connecticut: 96 stores (3.6%)
+   📍 Nevada: 89 stores (3.4%)
+   📍 Massachusetts: 80 stores (3.0%)
+   📍 Arizona: 74 stores (2.8%)
+   📍 Michigan: 72 stores (2.7%)
+   📍 New Jersey: 60 stores (2.3%)
+   📍 Virginia: 42 stores (1.6%)
+   📍 Minnesota: 37 stores (1.4%)
+   📍 Missouri: 33 stores (1.2%)
+   📍 Oregon: 25 stores (0.9%)
+   📍 Puerto Rico: 21 stores (0.8%)
+   📍 Ontario: 21 stores (0.8%)
+   📍 Maine: 19 stores (0.7%)
+   📍 Louisiana: 18 stores (0.7%)
+   📍 Texas: 18 stores (0.7%)
+   📍 Arkansas: 13 stores (0.5%)
+   📍 Oklahoma: 10 stores (0.4%)
+   📍 North Dakota: 10 stores (0.4%)
+   📍 Alaska: 9 stores (0.3%)
+   📍 Georgia: 9 stores (0.3%)
+   📍 Hawaii: 7 stores (0.3%)
+   📍 Vermont: 6 stores (0.2%)
+   📍 Rhode Island: 6 stores (0.2%)
+   📍 Montana: 5 stores (0.2%)
+   📍 New Hampshire: 5 stores (0.2%)
+   📍 West Virginia: 4 stores (0.2%)
+   📍 Mississippi: 4 stores (0.2%)
+   📍 Delaware: 3 stores (0.1%)
+   📍 Utah: 3 stores (0.1%)
+   📍 District of Columbia: 1 stores (0.0%)
+   📍 British Columbia: 1 stores (0.0%)
+
+==================================================
+📊 SUMMARY:
+   Total stores analyzed: 5927
+   Inactive stores: 3271 (55.2%)
+   Active stores: 2656 (44.8%)
+   Recreational stores: 1416
+   Medical stores: 1240
+   States/Provinces with stores: 41
+```
