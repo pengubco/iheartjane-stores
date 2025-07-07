@@ -20,23 +20,23 @@ npm run dev
 
 ### Run the Playwright web scraper:
 ```bash
-# Basic usage - saves only text content
+# Basic usage - fetch single store (default: 477) to current directory
 node playwright-brave.js
 
-# Save all formats (HTML + PNG + text)
-node playwright-brave.js --save-html --save-png
+# Fetch specific store by ID to specific folder
+node playwright-brave.js --store 123 --output ./data
 
-# Run in headless mode (no browser window)
-node playwright-brave.js --headless
+# Fetch range of stores to specific directory
+node playwright-brave.js --start 470 --end 480 -o ./stores
 
-# Show help and options
+# Fetch large range silently to organized folder
+node playwright-brave.js --start 1 --end 100 --headless --output ./downloads
+
+# Save all formats to specific directory
+node playwright-brave.js --start 470 --end 475 --save-html --save-png --output ./complete-data
+
+# Show help and all options
 node playwright-brave.js --help
-```
-
-### Check your setup:
-```bash
-node --version  # Check Node.js version
-npm --version   # Check npm version
 ```
 
 ## Project Structure
