@@ -180,28 +180,28 @@ async function processAllChunks() {
     }
 
     const results = [];
-    const activePromises = [];
+    let chunkIndex = 0;
 
-    for (let i = 0; i < chunks.length; i++) {
-        // Wait if we've reached the concurrency limit
-        if (activePromises.length >= maxConcurrent) {
-            const result = await Promise.race(activePromises);
-            const index = activePromises.findIndex(p => p === result);
-            activePromises.splice(index, 1);
-            results.push(result);
-        }
-
-        // Start new chunk processing
-        const chunkPromise = processChunk(chunks[i], i)
-            .then(result => result)
-            .catch(error => error);
+    // Process chunks with proper concurrency control
+    while (chunkIndex < chunks.length) {
+        const activePromises = [];
         
-        activePromises.push(chunkPromise);
+        // Start up to maxConcurrent processes
+        for (let i = 0; i < maxConcurrent && chunkIndex < chunks.length; i++) {
+            const promise = processChunk(chunks[chunkIndex], chunkIndex)
+                .then(result => result)
+                .catch(error => error);
+            
+            activePromises.push(promise);
+            chunkIndex++;
+        }
+        
+        // Wait for all current batch to complete
+        const batchResults = await Promise.all(activePromises);
+        results.push(...batchResults);
+        
+        console.log(`📊 Batch completed: ${Math.min(chunkIndex, chunks.length)}/${chunks.length} chunks processed`);
     }
-
-    // Wait for all remaining processes to complete
-    const remainingResults = await Promise.all(activePromises);
-    results.push(...remainingResults);
 
     return results;
 }
