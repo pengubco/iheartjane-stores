@@ -16,12 +16,6 @@ let saveHtml = args.includes('--save-html');
 let savePng = args.includes('--save-png');
 let headless = args.includes('--headless'); // optional headless mode
 
-// Parse positional arguments (startId endId chunkSize maxConcurrent)
-const positionalArgs = args.filter(arg => !arg.startsWith('--') && !isNaN(parseInt(arg))).map(arg => parseInt(arg));
-if (positionalArgs.length >= 1) startId = positionalArgs[0];
-if (positionalArgs.length >= 2) endId = positionalArgs[1];
-if (positionalArgs.length >= 3) chunkSize = positionalArgs[2];
-if (positionalArgs.length >= 4) maxConcurrent = positionalArgs[3];
 
 // Parse arguments
 const startFlag = args.findIndex(arg => arg === '--start');
@@ -50,35 +44,27 @@ if (help) {
     console.log(`
 Parallel Web Scraper for iHeartJane Stores
 
-Usage: 
-  node parallel-scraper.js [startId] [endId] [chunkSize] [maxConcurrent] [options]
-  node parallel-scraper.js [options]
-
-Positional Arguments:
-  startId                Start store ID (default: 1)
-  endId                  End store ID (default: 6000)
-  chunkSize              Stores per chunk/process (default: 100)
-  maxConcurrent          Maximum parallel processes (default: 5)
+Usage: node parallel-scraper.js [options]
 
 Options:
-  --start <id>           Start store ID (overrides positional)
-  --end <id>             End store ID (overrides positional)
+  --start <id>           Start store ID (default: 1)
+  --end <id>             End store ID (default: 6000)
   --output <path>        Output directory (default: ./scraped-stores)
   -o <path>              Short form of --output
-  --chunk-size <size>    Stores per chunk/process (overrides positional)
-  --max-concurrent <n>   Maximum parallel processes (overrides positional)
+  --chunk-size <size>    Stores per chunk/process (default: 100)
+  --max-concurrent <n>   Maximum parallel processes (default: 5)
   --headless             Run browsers in headless mode (no UI)
   --save-html            Save HTML files (passed to each process)
   --save-png             Save PNG screenshots (passed to each process)
   --help, -h             Show this help message
 
 Examples:
-  node parallel-scraper.js                                    # Scrape stores 1-6000, chunk=100, concurrent=5
-  node parallel-scraper.js 1 1000 50 10                      # Scrape stores 1-1000, chunk=50, concurrent=10
-  node parallel-scraper.js 500 1500                          # Scrape stores 500-1500, chunk=100, concurrent=5
-  node parallel-scraper.js 1 6000 200 8 --headless           # High-performance: chunk=200, concurrent=8, headless
-  node parallel-scraper.js --start 1 --end 1000 --save-html   # Named flags with HTML saving
-  node parallel-scraper.js 1 1000 --output ./data --save-png  # Mixed positional and named arguments
+  node parallel-scraper.js                                      # Scrape stores 1-6000, defaults
+  node parallel-scraper.js --start 1 --end 1000                 # Scrape stores 1-1000
+  node parallel-scraper.js --start 1 --end 1000 --chunk-size 50 --max-concurrent 10  # Custom settings
+  node parallel-scraper.js --start 1 --end 6000 --chunk-size 200 --max-concurrent 8 --headless  # High-performance
+  node parallel-scraper.js --start 1 --end 1000 --save-html --save-png  # Save all formats
+  node parallel-scraper.js --start 500 --end 1500 --output ./data       # Custom output directory
 
 Performance Notes:
 - Each chunk runs as a separate process with its own browser instance

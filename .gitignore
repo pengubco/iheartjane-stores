@@ -91,3 +91,8 @@ typings/
 
 # Screenshots (optional - remove if you want to track them)
 *.png
+
+# Output directories
+scraped-stores/
+test-output/
+test-parallel/
